@@ -14,6 +14,8 @@ struct AppState: Equatable {
     var mapItems: [MKMapItem] = []
     var query = ""
     var region = CoordinateRegion.mocRegion
+    
+    var navigationBarIsHiden = false
 }
 
 enum AppAction: Equatable {
@@ -23,6 +25,7 @@ enum AppAction: Equatable {
     case regionChanged(CoordinateRegion)
     case searchResponse(Result<LocalSearchClient.Response, NSError>)
     case tappedCompletion(LocalSearchCompletion)
+    case tappedChangeUI
 }
 
 struct AppEnvironment {
@@ -73,6 +76,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
     case let .searchResponse(.failure(error)):
         // TODO: -
         return .none
+    case .tappedChangeUI:
+        state.navigationBarIsHiden.toggle()
+        return .none
     }
 }
 
@@ -81,97 +87,23 @@ struct ContentView: View {
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
-            Map.init(
-                coordinateRegion: viewStore.binding(
-                    get: \.region.rawValue,
-                    send: { .regionChanged(.init(rawValue: $0)) }
-                ),
-                //            interactionModes: <#T##MapInteractionModes#>,
-                //            showsUserLocation: <#T##Bool#>,
-                //            userTrackingMode: <#T##Binding<MapUserTrackingMode>?#>,
-                annotationItems: viewStore.mapItems,
-                annotationContent: { mapItem in
-                    MapMarker(coordinate: mapItem.placemark.coordinate)
-                }
-            )
-            .searchable(
-                text: viewStore.binding(
-                    get: \.query,
-                    send: AppAction.queryChanged
+            ZStack(alignment: .bottom) {
+                Map.init(
+                    coordinateRegion: viewStore.binding(
+                        get: \.region.rawValue,
+                        send: { .regionChanged(.init(rawValue: $0)) }
+                    ),
+                    annotationItems: viewStore.mapItems,
+                    annotationContent: { mapItem in
+                        MapMarker(coordinate: mapItem.placemark.coordinate)
+                    }
                 )
-                //            placement: <#T##SearchFieldPlacement#>,
-                //            prompt: <#T##StringProtocol#>,
-                //            suggestions: <#T##() -> View#>
-                //        .ignoresSafeArea()
-            ) {
-                if viewStore.query.isEmpty {
-                    HStack {
-                        Text("Recent Searches")
-                        Spacer()
-                        Button(action: {
-                            
-                        }) {
-                            Text("See all")
-                        }
-                    }
-                    .font(.callout)
-                    
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                        Text("Apple • New York")
-                        Spacer()
-                    }
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                        Text("Apple • New York")
-                        Spacer()
-                    }
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                        Text("Apple • New York")
-                        Spacer()
-                    }
-                    
-                    HStack {
-                        Text("Find nearby")
-                        Spacer()
-                        Button(action: {
-                            
-                        }) {
-                            Text("See all")
-                        }
-                    }
-                    .padding(.top)
-                    .font(.callout)
-                    
-                    ScrollView(.horizontal) {
-                        HStack {
-                            ForEach(1...2, id: \.self) { _ in
-                                VStack {
-                                    ForEach(1...2, id: \.self) { _ in
-                                        HStack {
-                                            Image(systemName: "bag.circle.fill")
-                                                .foregroundStyle(Color.white, Color.red)
-                                                .font(.title)
-                                            Text("Shopping")
-                                        }
-                                        .padding([.top, .bottom, .trailing],  4)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    HStack {
-                        Text("Editors’ picks")
-                        Spacer()
-                        Button(action: {}) {
-                            Text("See all")
-                        }
-                    }
-                    .padding(.top)
-                    .font(.callout)
-                } else {
+                .searchable(
+                    text: viewStore.binding(
+                        get: \.query,
+                        send: AppAction.queryChanged
+                    )
+                ) {
                     ForEach(viewStore.completions) { completion in
                         Button {
                             viewStore.send(.tappedCompletion(completion))
@@ -184,10 +116,22 @@ struct ContentView: View {
                         }
                     }
                 }
+                Button {
+                    withAnimation {
+                        viewStore.send(.tappedChangeUI)
+                    }
+                    
+                } label: {
+                    Text("Change UI")
+                        .foregroundColor(.black)
+                        .bold()
+                        .padding(50)
+                }
             }
             .navigationTitle("Places")
             .navigationBarTitleDisplayMode(.inline)
-            .ignoresSafeArea(edges: .bottom)
+            .ignoresSafeArea(edges: viewStore.navigationBarIsHiden ? .vertical : .bottom)
+            .navigationBarHidden(viewStore.navigationBarIsHiden)
             .onAppear {
                 viewStore.send(.onAppear)
             }
