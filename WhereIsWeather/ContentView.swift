@@ -16,6 +16,7 @@ struct AppState: Equatable {
     var region = CoordinateRegion.mocRegion
     
     var navigationBarIsHiden = false
+    var uiButtonIsHiden = false
 }
 
 enum AppAction: Equatable {
@@ -26,6 +27,8 @@ enum AppAction: Equatable {
     case searchResponse(Result<LocalSearchClient.Response, NSError>)
     case tappedCompletion(LocalSearchCompletion)
     case tappedChangeUI
+    case changeUIButtonOn
+    case changeUIButtonOff
 }
 
 struct AppEnvironment {
@@ -79,55 +82,43 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
     case .tappedChangeUI:
         state.navigationBarIsHiden.toggle()
         return .none
+    case .changeUIButtonOn:
+        state.uiButtonIsHiden = false
+        return .none
+    case .changeUIButtonOff:
+        state.uiButtonIsHiden = true
+        return .none
     }
 }
 
 struct ContentView: View {
     let store: Store<AppState, AppAction>
     
+    @Environment(\.isSearching) var isSearching
+    
     var body: some View {
         WithViewStore(self.store) { viewStore in
-            ZStack(alignment: .bottom) {
-                Map.init(
-                    coordinateRegion: viewStore.binding(
-                        get: \.region.rawValue,
-                        send: { .regionChanged(.init(rawValue: $0)) }
-                    ),
-                    annotationItems: viewStore.mapItems,
-                    annotationContent: { mapItem in
-                        MapMarker(coordinate: mapItem.placemark.coordinate)
-                    }
-                )
-                .searchable(
-                    text: viewStore.binding(
-                        get: \.query,
-                        send: AppAction.queryChanged
-                    )
-                ) {
-                    ForEach(viewStore.completions) { completion in
+            ZStack(alignment: .bottomTrailing) {
+                ExtractedView(store: self.store)
+       
+                if !viewStore.uiButtonIsHiden {
+                    VStack(alignment: .leading) {
                         Button {
-                            viewStore.send(.tappedCompletion(completion))
+                            viewStore.send(.tappedChangeUI)
                         } label: {
-                            VStack(alignment: .leading) {
-                                Text(completion.title)
-                                Text(completion.subtitle)
-                                    .font(.caption)
+                            HStack {
+                                Text("Change UI")
+                                    .bold()
+                                Image(systemName: "circle.grid.cross.fill")
                             }
+                            .foregroundColor(.black)
+                            .padding([.vertical], 25)
+                            .padding([.horizontal], 10)
                         }
                     }
                 }
-                Button {
-                    withAnimation {
-                        viewStore.send(.tappedChangeUI)
-                    }
-                    
-                } label: {
-                    Text("Change UI")
-                        .foregroundColor(.black)
-                        .bold()
-                        .padding(50)
-                }
             }
+
             .navigationTitle("Places")
             .navigationBarTitleDisplayMode(.inline)
             .ignoresSafeArea(edges: viewStore.navigationBarIsHiden ? .vertical : .bottom)
@@ -219,3 +210,50 @@ extension LocalSearchCompletion: Identifiable {
 }
 
 extension MKMapItem: Identifiable {}
+
+
+struct ExtractedView: View {
+    let store: Store<AppState, AppAction>
+    
+    @Environment(\.isSearching) var isSearching
+    var body: some View {
+        WithViewStore(self.store) { viewStore in
+            Map.init(
+                coordinateRegion: viewStore.binding(
+                    get: \.region.rawValue,
+                    send: { .regionChanged(.init(rawValue: $0)) }
+                ),
+                annotationItems: viewStore.mapItems,
+                annotationContent: { mapItem in
+                    MapMarker(coordinate: mapItem.placemark.coordinate)
+                }
+            )
+            .searchable(
+                text: viewStore.binding(
+                    get: \.query,
+                    send: AppAction.queryChanged
+                )
+            ) {
+                Group {
+                    ForEach(viewStore.completions) { completion in
+                        Button {
+                            viewStore.send(.tappedCompletion(completion))
+                        } label: {
+                            VStack(alignment: .leading) {
+                                Text(completion.title)
+                                Text(completion.subtitle)
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                }
+                .onAppear {
+                    viewStore.send(.changeUIButtonOff)
+                }
+                .onDisappear {
+                    viewStore.send(.changeUIButtonOn)
+                }
+            }
+        }
+    }
+}
