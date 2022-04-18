@@ -214,8 +214,6 @@ extension MKMapItem: Identifiable {}
 
 struct ExtractedView: View {
     let store: Store<AppState, AppAction>
-    
-    @Environment(\.isSearching) var isSearching
     var body: some View {
         WithViewStore(self.store) { viewStore in
             Map.init(
