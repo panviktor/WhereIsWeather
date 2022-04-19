@@ -5,6 +5,7 @@
 //  Created by Viktor on 18.04.2022.
 //
 import ComposableArchitecture
+import ComposableCoreLocation
 import XCTest
 import Combine
 @testable import WhereIsWeather
@@ -19,8 +20,10 @@ class WhereIsWeatherTests: XCTestCase {
             environment: .init(
                 localSearch: .failing,
                 localSearchCompleter: .failing,
-                mainQueue: .immediate)
+                mainQueue: .immediate,
+                locationManager: .failing)
         )
+        
         store.environment.localSearchCompleter.completions = {
             completions.eraseToEffect()
         }

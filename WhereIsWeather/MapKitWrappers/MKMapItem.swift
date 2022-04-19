@@ -8,6 +8,3 @@
 import MapKit
 
 extension MKMapItem: Identifiable {}
-
-
-
