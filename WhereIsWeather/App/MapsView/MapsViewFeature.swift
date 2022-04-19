@@ -11,12 +11,12 @@
 //import MapKit
 //
 //struct MapsState: Equatable {
-//    
+//
 //}
 //
 //enum MapsAction: Equatable {
 //    case onAppear
-//    
+//
 //}
 //
 //let mapsReducer = Reducer<MapsState, MapsAction, AppEnvironment> {

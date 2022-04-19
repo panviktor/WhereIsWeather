@@ -43,7 +43,6 @@ struct AppEnvironment {
     var localSearch: LocalSearchClient
     var localSearchCompleter: LocalSearchCompleter
     var mainQueue: AnySchedulerOf<DispatchQueue>
-    
     var locationManager: LocationManager
 }
 
@@ -152,8 +151,11 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
 }
     .combined(
         with:
-            locationManagerReducer
-            .pullback(state: \.self, action: /AppAction.locationManager, environment: { $0 })
+            locationManagerReducer.pullback(
+                state: \.self,
+                action: /AppAction.locationManager,
+                environment: { $0 }
+            )
     )
 
 
