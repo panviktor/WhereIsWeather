@@ -41,21 +41,3 @@ extension LocalSearchClient {
         }
     )
 }
-
-//extension Effect {
-//    static func task(
-//        priority: TaskPriority? = nil,
-//        operation: @escaping @Sendable () async throws -> Output
-//    ) -> Self
-//    where Failure == Error {
-//        .future { callback in
-//            Task(priority: priority) {
-//                do {
-//                    callback(.success(try await operation()))
-//                } catch {
-//                    callback(.failure(error))
-//                }
-//            }
-//        }
-//    }
-//}

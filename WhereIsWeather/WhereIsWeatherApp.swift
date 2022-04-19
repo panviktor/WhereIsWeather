@@ -13,14 +13,15 @@ struct WhereIsWeatherApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationView {
-                ContentView(
+                AppView(
                     store: .init(
                         initialState: .init(),
                         reducer: appReducer.debugActions(),
                         environment: .init(
                             localSearch: .live,
                             localSearchCompleter: .live,
-                            mainQueue: .main
+                            mainQueue: .main,
+                            locationManager: .live
                         )
                     )
                 )

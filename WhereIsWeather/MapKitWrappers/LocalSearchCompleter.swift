@@ -54,26 +54,3 @@ extension LocalSearchCompleter {
     }
 }
 
-struct LocalSearchCompletion: Equatable {
-    let rawValue: MKLocalSearchCompletion?
-    
-    var subtitle: String
-    var title: String
-    
-    init(rawValue: MKLocalSearchCompletion) {
-        self.rawValue = rawValue
-        self.subtitle = rawValue.subtitle
-        self.title = rawValue.title
-    }
-    
-    init(subtitle: String, title: String) {
-        self.rawValue = nil
-        self.subtitle = subtitle
-        self.title = title
-    }
-    
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.title == rhs.title &&
-        lhs.subtitle == rhs.subtitle
-    }
-}
