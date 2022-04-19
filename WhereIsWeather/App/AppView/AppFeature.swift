@@ -20,7 +20,7 @@ struct AppState: Equatable {
     var navigationBarIsHiden = false
     var uiButtonsIsHiden = false
     
-    var status: NetworkPath = .init(status: .unsatisfied)
+    var status: NetworkPath = .init(status: .satisfied)
     
     var isRequestingCurrentLocation = false
     var alert: AlertState<AppAction>?
@@ -30,6 +30,7 @@ enum AppAction: Equatable {
     case comletionsUpdated(Result<[LocalSearchCompletion], NSError>)
     case onAppear
     case queryChanged(String)
+    case regionWillChanged(CoordinateRegion)
     case regionChanged(CoordinateRegion)
     case searchResponse(Result<LocalSearchClient.Response, NSError>)
     case tappedCompletion(LocalSearchCompletion)
@@ -42,6 +43,9 @@ enum AppAction: Equatable {
     case currentLocationButtonTapped
     
     case pathMonitor(NetworkPath)
+    
+
+    
 }
 
 struct AppEnvironment {
@@ -54,6 +58,8 @@ struct AppEnvironment {
 
 struct LocationManagerId: Hashable {}
 struct PathMonitorClientId: Hashable {}
+struct DebounceDelayId: Hashable {}
+
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
     state, action, environment in
@@ -80,6 +86,14 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
         state.query = query
         return environment.localSearchCompleter.search(query)
             .fireAndForget()
+        
+    case let .regionWillChanged(region):
+        return Effect(value: region)
+                    .debounce(
+                        id: DebounceDelayId(),
+                        for: 1,
+                        scheduler: environment.mainQueue)
+                    .map(AppAction.regionChanged)
         
     case let .regionChanged(region):
         state.region = region

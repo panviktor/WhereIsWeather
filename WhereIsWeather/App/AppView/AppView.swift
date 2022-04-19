@@ -44,7 +44,7 @@ struct AppView: View {
                                 .foregroundColor(.black)
                             }
                         }
-                        .padding([.vertical], 30)
+                        .padding([.vertical], 60)
                         .padding([.horizontal], 10)
                     }
                 }

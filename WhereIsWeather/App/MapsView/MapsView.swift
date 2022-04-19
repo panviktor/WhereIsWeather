@@ -16,7 +16,7 @@ struct MapsView: View {
             Map.init(
                 coordinateRegion: viewStore.binding(
                     get: \.region.rawValue,
-                    send: { .regionChanged(.init(rawValue: $0)) }
+                    send: { .regionWillChanged(.init(rawValue: $0)) }
                 ),
                 annotationItems: viewStore.mapItems,
                 annotationContent: { mapItem in
