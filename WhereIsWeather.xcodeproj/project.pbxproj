@@ -78,6 +78,7 @@
 				770F11A3280D5AE000FD205F /* WhereIsWeatherApp.swift */,
 				77682E62280EBDAC00210956 /* App */,
 				77682E59280EBCC400210956 /* MapKitWrappers */,
+				77682E47280EBB9800210956 /* PathMonitorClient.swift */,
 				770F11A7280D5AE100FD205F /* Assets.xcassets */,
 				770F11A9280D5AE100FD205F /* Preview Content */,
 			);
@@ -98,7 +99,6 @@
 				777E3181280D7E7C00992DFF /* LocalSearchCompleter.swift */,
 				77682E56280EBCA800210956 /* LocalSearchCompletion.swift */,
 				777E3183280DB09200992DFF /* LocalSearchClient.swift */,
-				77682E47280EBB9800210956 /* PathMonitorClient.swift */,
 				77682E4A280EBBD000210956 /* CoordinateRegion.swift */,
 				77682E4D280EBBF600210956 /* LocationCoordinate2D.swift */,
 				77682E50280EBC3500210956 /* MKMapItem.swift */,

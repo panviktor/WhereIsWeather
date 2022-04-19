@@ -9,6 +9,7 @@ import ComposableArchitecture
 import ComposableCoreLocation
 import SwiftUI
 import MapKit
+import Network
 
 struct AppState: Equatable {
     var completions: [LocalSearchCompletion] = []
@@ -18,6 +19,8 @@ struct AppState: Equatable {
     
     var navigationBarIsHiden = false
     var uiButtonsIsHiden = false
+    
+    var status: NetworkPath = .init(status: .unsatisfied)
     
     var isRequestingCurrentLocation = false
     var alert: AlertState<AppAction>?
@@ -37,6 +40,8 @@ enum AppAction: Equatable {
     case locationManager(LocationManager.Action)
     case dismissAlertButtonTapped
     case currentLocationButtonTapped
+    
+    case pathMonitor(NetworkPath)
 }
 
 struct AppEnvironment {
@@ -44,9 +49,11 @@ struct AppEnvironment {
     var localSearchCompleter: LocalSearchCompleter
     var mainQueue: AnySchedulerOf<DispatchQueue>
     var locationManager: LocationManager
+    var pathMonitor: PathMonitorClient
 }
 
 struct LocationManagerId: Hashable {}
+struct PathMonitorClientId: Hashable {}
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
     state, action, environment in
@@ -61,7 +68,12 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
             
             environment.locationManager.delegate()
                 .map(AppAction.locationManager)
-                .cancellable(id: LocationManagerId())
+                .cancellable(id: LocationManagerId()),
+            
+            environment.pathMonitor.networkPathPublisher
+                .receive(on: environment.mainQueue.animation())
+                .eraseToEffect()
+                .map(AppAction.pathMonitor)
         )
         
     case let .queryChanged(query):
@@ -146,6 +158,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
         state.alert = nil
         return .none
     case .locationManager:
+        return .none
+    case let .pathMonitor(monitor):
+        state.status = monitor
         return .none
     }
 }

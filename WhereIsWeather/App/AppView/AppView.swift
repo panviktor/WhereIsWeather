@@ -84,7 +84,8 @@ struct ContentView_Previews: PreviewProvider {
                         localSearch: .live,
                         localSearchCompleter: .live,
                         mainQueue: .main,
-                        locationManager: .live
+                        locationManager: .live,
+                        pathMonitor: .live(queue: .main)
                     )
                 )
             )
