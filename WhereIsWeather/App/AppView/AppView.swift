@@ -49,7 +49,7 @@ struct AppView: View {
                     }
                 }
                 
-                if true {
+                if !viewStore.status.satisfied {
                     HStack {
                         Image(systemName: "exclamationmark.octagon.fill")
                         Text("Not connected to internet")

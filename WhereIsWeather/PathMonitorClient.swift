@@ -19,6 +19,21 @@ extension NetworkPath {
     }
 }
 
+extension NetworkPath {
+    var satisfied: Bool {
+        switch status {
+        case .satisfied:
+            return true
+        case .unsatisfied:
+            return  false
+        case .requiresConnection:
+            return false
+        @unknown default:
+            return false
+        }
+    }
+}
+
 struct PathMonitorClient {
     var networkPathPublisher: Effect<NetworkPath, Never>
     
@@ -30,20 +45,21 @@ struct PathMonitorClient {
 }
 
 extension PathMonitorClient {
-  public static func live(queue: DispatchQueue) -> Self {
-    let monitor = NWPathMonitor()
-    let subject = PassthroughSubject<NWPath, Never>()
-    monitor.pathUpdateHandler = subject.send
-
-    return Self(
-      networkPathPublisher: subject
-        .handleEvents(
-          receiveSubscription: { _ in monitor.start(queue: queue) },
-          receiveCancel: monitor.cancel
+    public static func live(queue: DispatchQueue) -> Self {
+        let monitor = NWPathMonitor()
+        let subject = PassthroughSubject<NWPath, Never>()
+        monitor.pathUpdateHandler = subject.send
+        
+        return Self(
+            networkPathPublisher: subject
+                .handleEvents(
+                    receiveSubscription: { _ in monitor.start(queue: queue) },
+                    receiveCancel: monitor.cancel
+                )
+                .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+                .map(NetworkPath.init(rawValue:))
+                .eraseToAnyPublisher()
+                .eraseToEffect()
         )
-        .map(NetworkPath.init(rawValue:))
-        .eraseToAnyPublisher()
-        .eraseToEffect()
-    )
-  }
+    }
 }
