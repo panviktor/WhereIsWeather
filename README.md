@@ -1,2 +1,2 @@
 # WhereIsWeather
-ComposableArchitecture, MapKit, SwiftUI
+ComposableArchitecture, MapKit, SwiftUI, OpenWeatherAPI
