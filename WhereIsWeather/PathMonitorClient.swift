@@ -56,7 +56,7 @@ extension PathMonitorClient {
                     receiveSubscription: { _ in monitor.start(queue: queue) },
                     receiveCancel: monitor.cancel
                 )
-                .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+                .debounce(for: .milliseconds(500), scheduler: queue)
                 .map(NetworkPath.init(rawValue:))
                 .eraseToAnyPublisher()
                 .eraseToEffect()

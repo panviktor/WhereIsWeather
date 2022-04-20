@@ -21,31 +21,35 @@ struct AppView: View {
                     MapsView(store: self.store)
                     
                     if !viewStore.uiButtonsIsHiden {
-                        HStack {
-                            Button {
-                                viewStore.send(.currentLocationButtonTapped)
-                            } label: {
-                                Image(systemName: "location.fill")
-                                    .foregroundColor(.white)
-                                    .frame(width: 50, height: 50)
-                            }
-                            .background(Color.black)
-                            .opacity(0.9)
-                            .clipShape(Circle())
-                            Spacer()
-                            Button {
-                                viewStore.send(.tappedChangeUI)
-                            } label: {
-                                HStack {
-                                    Text("Change UI")
-                                        .bold()
-                                    Image(systemName: "circle.grid.cross.fill")
+                        VStack {
+                            Text(String(viewStore.weather.temp ?? 0))
+                                .bold()
+                            HStack {
+                                Button {
+                                    viewStore.send(.currentLocationButtonTapped)
+                                } label: {
+                                    Image(systemName: "location.fill")
+                                        .foregroundColor(.white)
+                                        .frame(width: 50, height: 50)
                                 }
-                                .foregroundColor(.black)
+                                .background(Color.black)
+                                .opacity(0.9)
+                                .clipShape(Circle())
+                                Spacer()
+                                Button {
+                                    viewStore.send(.tappedChangeUI)
+                                } label: {
+                                    HStack {
+                                        Text("Change UI")
+                                            .bold()
+                                        Image(systemName: "circle.grid.cross.fill")
+                                    }
+                                    .foregroundColor(.black)
+                                }
                             }
+                            .padding([.vertical], 60)
+                            .padding([.horizontal], 10)
                         }
-                        .padding([.vertical], 60)
-                        .padding([.horizontal], 10)
                     }
                 }
                 
@@ -85,7 +89,8 @@ struct ContentView_Previews: PreviewProvider {
                         localSearchCompleter: .live,
                         mainQueue: .main,
                         locationManager: .live,
-                        pathMonitor: .live(queue: .main)
+                        pathMonitor: .live(queue: .main),
+                        weatherClient: .live
                     )
                 )
             )

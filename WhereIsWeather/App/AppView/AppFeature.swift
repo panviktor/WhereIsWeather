@@ -24,6 +24,8 @@ struct AppState: Equatable {
     
     var isRequestingCurrentLocation = false
     var alert: AlertState<AppAction>?
+    
+    var weather: Weather = .init()
 }
 
 enum AppAction: Equatable {
@@ -32,6 +34,7 @@ enum AppAction: Equatable {
     case queryChanged(String)
     case regionWillChanged(CoordinateRegion)
     case regionChanged(CoordinateRegion)
+    case locationsResponse(Result<WeatherResponse, WeatherClient.Failure>)
     case searchResponse(Result<LocalSearchClient.Response, NSError>)
     case tappedCompletion(LocalSearchCompletion)
     case tappedChangeUI
@@ -43,9 +46,6 @@ enum AppAction: Equatable {
     case currentLocationButtonTapped
     
     case pathMonitor(NetworkPath)
-    
-
-    
 }
 
 struct AppEnvironment {
@@ -54,6 +54,7 @@ struct AppEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
     var locationManager: LocationManager
     var pathMonitor: PathMonitorClient
+    var weatherClient: WeatherClient
 }
 
 struct LocationManagerId: Hashable {}
@@ -89,14 +90,25 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
         
     case let .regionWillChanged(region):
         return Effect(value: region)
-                    .debounce(
-                        id: DebounceDelayId(),
-                        for: 1,
-                        scheduler: environment.mainQueue)
-                    .map(AppAction.regionChanged)
+            .debounce(
+                id: DebounceDelayId(),
+                for: 1,
+                scheduler: environment.mainQueue)
+            .map(AppAction.regionChanged)
         
     case let .regionChanged(region):
+        struct SearchWeatherId: Hashable {}
         state.region = region
+        return environment.weatherClient
+            .weather(region)
+            .receive(on: environment.mainQueue)
+            .catchToEffect(AppAction.locationsResponse)
+            .cancellable(id: SearchWeatherId(), cancelInFlight: true)
+    case let .locationsResponse(.success(locationWeather)):
+        state.weather = locationWeather.main
+        return .none
+        
+    case let .locationsResponse(.failure(locationWeather)):
         return .none
         
     case let .comletionsUpdated(.success(completions)):

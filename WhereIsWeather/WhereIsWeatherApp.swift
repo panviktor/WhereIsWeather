@@ -22,7 +22,8 @@ struct WhereIsWeatherApp: App {
                             localSearchCompleter: .live,
                             mainQueue: .main,
                             locationManager: .live,
-                            pathMonitor: .live(queue: .main)
+                            pathMonitor: .live(queue: .main),
+                            weatherClient: .live
                         )
                     )
                 )
