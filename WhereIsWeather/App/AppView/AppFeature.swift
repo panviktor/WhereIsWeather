@@ -60,7 +60,7 @@ struct AppEnvironment {
 struct LocationManagerId: Hashable {}
 struct PathMonitorClientId: Hashable {}
 struct DebounceDelayId: Hashable {}
-
+struct SearchWeatherId: Hashable {}
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
     state, action, environment in
@@ -97,7 +97,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
             .map(AppAction.regionChanged)
         
     case let .regionChanged(region):
-        struct SearchWeatherId: Hashable {}
         state.region = region
         return environment.weatherClient
             .weather(region)
